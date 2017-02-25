@@ -1,6 +1,8 @@
 package qy
 
 import (
+	"net/http"
+
 	"github.com/yl10/tencent/wechat/qy/client"
 	"github.com/yl10/tencent/wechat/qy/message"
 	"github.com/yl10/tencent/wechat/qy/oauth"
@@ -9,6 +11,14 @@ import (
 //Wx 企业微信
 type Wx struct {
 	client *client.Client
+}
+
+//NewWx 初始化一个微信
+func NewWx(corpid, secret string, srv client.AccesstokenServer, htc *http.Client) (*Wx, error) {
+	c, err := client.NewClient(corpid, secret, srv, htc)
+	wx := &Wx{client: c}
+	return wx, err
+
 }
 
 //SendMessage 发送消息
