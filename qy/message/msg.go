@@ -11,7 +11,7 @@ import (
 
 const (
 	//SendMesseageURL 主动发送消息使用的url
-	SendMesseageURL = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="
+	SendMesseageURL = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s"
 )
 
 const (
@@ -239,6 +239,12 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+//NewText 实例化一个文本消息
+func NewText(agenid int64, toAll, issafe bool, user, party, tag []string, textcontent string) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, Text{Content: textcontent})
+	return msg
 }
 
 //NewMessage 实例化一个微信消息

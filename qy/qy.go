@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/yl10/tencent/wechat/qy/client"
-	"github.com/yl10/tencent/wechat/qy/message"
 	"github.com/yl10/tencent/wechat/qy/oauth"
 )
 
@@ -19,11 +18,6 @@ func NewWx(corpid, secret string, srv client.AccesstokenServer, htc *http.Client
 	wx := &Wx{client: c}
 	return wx, err
 
-}
-
-//SendMessage 发送消息
-func (wx *Wx) SendMessage(msg message.Message) (*message.Result, error) {
-	return message.SendMessage(wx.client, msg)
 }
 
 //GetOauthUserInfo 通过code获取用户信息
