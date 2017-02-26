@@ -3,8 +3,8 @@ package qy
 import (
 	"net/http"
 
-	"github.com/yl10/tencent/wechat/qy/client"
-	"github.com/yl10/tencent/wechat/qy/oauth"
+	"github.com/yl10/wechat/qy/client"
+	"github.com/yl10/wechat/qy/oauth"
 )
 
 //Wx 企业微信
