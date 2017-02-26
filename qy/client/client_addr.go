@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/chenghuama/tencent/weixin/qy/model"
+	"github.com/yl10/wechat/qy/model"
 )
 
 //CreateDepartment 创建部门，传入部门名称，上级部门id，顺序号，返回部门id和错误

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/yl10/tencent/wechat/qy/client"
+	"github.com/yl10/wechat/qy/client"
 )
 
 //User 授权用户

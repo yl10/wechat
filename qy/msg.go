@@ -1,7 +1,7 @@
 package qy
 
 import (
-	"github.com/yl10/tencent/wechat/qy/message"
+	"github.com/yl10/wechat/qy/message"
 )
 
 //SendMessage 发送消息

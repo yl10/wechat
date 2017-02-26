@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/yl10/tencent/wechat/qy/client"
+	"github.com/yl10/wechat/qy/client"
 )
 
 const (
