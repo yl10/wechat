@@ -241,6 +241,30 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+//NewVideo 实例化一个语音消息
+func NewVideo(agenid int64, toAll, issafe bool, user, party, tag []string, mediaID, title, description string) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, Video{MediaID: mediaID, Title: title, Description: description})
+	return msg
+}
+
+//NewVoice 实例化一个语音消息
+func NewVoice(agenid int64, toAll, issafe bool, user, party, tag []string, mediaID string) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, Voice{MediaID: mediaID})
+	return msg
+}
+
+//NewFile 实例化一个文件消息
+func NewFile(agenid int64, toAll, issafe bool, user, party, tag []string, mediaID string) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, Voice{MediaID: mediaID})
+	return msg
+}
+
+//NewImage 实例化一个图片消息
+func NewImage(agenid int64, toAll, issafe bool, user, party, tag []string, mediaID string) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, Image{MediaID: mediaID})
+	return msg
+}
+
 //NewText 实例化一个文本消息
 func NewText(agenid int64, toAll, issafe bool, user, party, tag []string, textcontent string) *Message {
 	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, Text{Content: textcontent})

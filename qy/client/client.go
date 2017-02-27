@@ -43,11 +43,8 @@ func NewClient(corpid, secret string, srv AccesstokenServer, htc *http.Client) (
 	}
 	c.httpClient = htc
 	if srv == nil {
-		c.tokenServer = DefaultAccessTokenServer{
-			corpID:    c.corpID,
-			secret:    c.secret,
-			tokenChan: make(chan AccessToken),
-		}
+		c.tokenServer = NewDefaultAccessTokenServer(c.corpID, c.secret, c.httpClient)
+
 	}
 	return c, nil
 }

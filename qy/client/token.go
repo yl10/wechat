@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var _AccesstokenServer = DefaultAccessTokenServer{}
+
 //AccessToken AccessToken
 //expires为到期时间
 type AccessToken struct {
@@ -48,12 +50,13 @@ func (dats DefaultAccessTokenServer) BadToken() {
 func (dats DefaultAccessTokenServer) Token() (string, error) {
 
 	if !dats.isRun {
+
 		go dats.createAccessToken()
 	}
 
 	token := <-dats.tokenChan
 	if token.AccessToken == "" {
-		return "", dats.err
+		return "", fmt.Errorf("没能获取到token：%s", dats.err)
 	}
 
 	return token.AccessToken, nil
@@ -79,6 +82,20 @@ func (dats *DefaultAccessTokenServer) createAccessToken() {
 	}
 }
 
+//NewDefaultAccessTokenServer 初始化默认tokenserver
+func NewDefaultAccessTokenServer(corpID, secret string, client *http.Client) *DefaultAccessTokenServer {
+	ts := DefaultAccessTokenServer{
+		corpID:    corpID,
+		secret:    secret,
+		tokenChan: make(chan AccessToken),
+	}
+	if client == nil {
+		client = http.DefaultClient
+	}
+	go ts.createAccessToken()
+	return &ts
+}
+
 //AuthAccessToken 获取token的基本方法
 func AuthAccessToken(appid string, secret string) (token string, tlong time.Duration, errResult error) {
 	var res struct {
@@ -90,7 +107,6 @@ func AuthAccessToken(appid string, secret string) (token string, tlong time.Dura
 	if err != nil {
 		errResult = fmt.Errorf("Get access token failed: %v", err)
 		return
-
 	}
 
 	defer resp.Body.Close()
@@ -101,18 +117,16 @@ func AuthAccessToken(appid string, secret string) (token string, tlong time.Dura
 		return
 
 	}
-
 	if err = json.Unmarshal(body, &res); err != nil {
 		var clienterr ResponseError
 		err = json.Unmarshal(body, &clienterr)
 		if err == nil {
-			errResult = fmt.Errorf("获取Accesstoken失败：%s\n", body)
+			errResult = fmt.Errorf("获取Accesstoken失败：%v\n", clienterr)
 			return
 		}
 		errResult = fmt.Errorf("Parse access token failed:%v ", err)
 		return
 	}
-
 	return res.AccessToken, time.Duration(res.ExpiresIn * 1000 * 1000 * 1000), nil
 
 }
