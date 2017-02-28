@@ -55,10 +55,14 @@ func (dats DefaultAccessTokenServer) Token() (string, error) {
 	}
 
 	token := <-dats.tokenChan
+
+	if time.Since(token.Expires).Seconds() >= 0 {
+		dats.BadToken()
+		token = <-dats.tokenChan
+	}
 	if token.AccessToken == "" {
 		return "", fmt.Errorf("没能获取到token：%s", dats.err)
 	}
-
 	return token.AccessToken, nil
 }
 
@@ -74,6 +78,8 @@ func (dats *DefaultAccessTokenServer) createAccessToken() {
 			token.AccessToken, expires, dats.err = AuthAccessToken(dats.corpID, dats.secret)
 			token.Expires = time.Now().Add(expires - 100) //减少100秒
 			dats.lost = false
+
+		} else {
 
 		}
 

@@ -95,7 +95,7 @@ func (c *Client) SendGetRequest(reqURL string) ([]byte, error) {
 		case -1:
 			i--
 			continue
-		case 42001, 40001: // access_token timeout and retry
+		case 42001, 40001, 40014: // access_token timeout and retry
 			c.tokenServer.BadToken()
 			continue
 		default:
@@ -148,7 +148,7 @@ func (c *Client) PostJSON(reqURL string, v interface{}) ([]byte, error) {
 			continue
 		case 0:
 			return reply, nil
-		case 42001, 40001: // access_token timeout and retry
+		case 42001, 40001, 40014: // access_token timeout and retry
 			c.tokenServer.BadToken()
 			continue
 		default:
