@@ -21,7 +21,7 @@ type AccessToken struct {
 type AccesstokenServer interface {
 	Token() (string, error)           //获取token
 	Check(corpID, secret string) bool //检查是否一个管理组
-	BadToken()                        //如果token没有过期但是被破坏了不能使用，则通知服务进行重新拉取
+	RefreshToken()                    //如果token没有过期但是被破坏了不能使用，则通知服务进行重新拉取
 }
 
 //DefaultAccessTokenServer 默认的本地token服务
@@ -40,8 +40,8 @@ func (dats DefaultAccessTokenServer) Check(corpID, secret string) bool {
 	return dats.corpID == corpID && dats.secret == secret
 }
 
-//BadToken 实现接口
-func (dats DefaultAccessTokenServer) BadToken() {
+//RefreshToken 实现接口
+func (dats DefaultAccessTokenServer) RefreshToken() {
 
 	dats.lost = true
 }
@@ -57,7 +57,7 @@ func (dats DefaultAccessTokenServer) Token() (string, error) {
 	token := <-dats.tokenChan
 
 	if time.Since(token.Expires).Seconds() >= 0 {
-		dats.BadToken()
+		dats.RefreshToken()
 		token = <-dats.tokenChan
 	}
 	if token.AccessToken == "" {

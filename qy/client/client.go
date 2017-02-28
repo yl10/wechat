@@ -66,7 +66,7 @@ func (c *Client) SendGetRequest(reqURL string) ([]byte, error) {
 	for i := 0; i < retryMaxN; i++ {
 		token, err := c.tokenServer.Token()
 		if err != nil {
-			c.tokenServer.BadToken()
+			c.tokenServer.RefreshToken()
 			return nil, fmt.Errorf("获取token失败：%v\r\n", err)
 		}
 
@@ -96,7 +96,7 @@ func (c *Client) SendGetRequest(reqURL string) ([]byte, error) {
 			i--
 			continue
 		case 42001, 40001, 40014: // access_token timeout and retry
-			c.tokenServer.BadToken()
+			c.tokenServer.RefreshToken()
 			continue
 		default:
 			return nil, fmt.Errorf("WeiXin send get request reply[%d]: %s", result.ErrCode, result.ErrMsg)
@@ -119,7 +119,7 @@ func (c *Client) PostJSON(reqURL string, v interface{}) ([]byte, error) {
 	for i := 0; i < retryMaxN; i++ {
 		token, err := c.tokenServer.Token()
 		if err != nil {
-			c.tokenServer.BadToken()
+			c.tokenServer.RefreshToken()
 			return nil, fmt.Errorf("获取token失败：%v\r\n", err)
 		}
 
@@ -149,7 +149,7 @@ func (c *Client) PostJSON(reqURL string, v interface{}) ([]byte, error) {
 		case 0:
 			return reply, nil
 		case 42001, 40001, 40014: // access_token timeout and retry
-			c.tokenServer.BadToken()
+			c.tokenServer.RefreshToken()
 			continue
 		default:
 			return nil, fmt.Errorf("WeiXin reply[%d]: %s", result.ErrCode, result.ErrMsg)
