@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/yl10/wechat/qy/client"
-	"github.com/yl10/wechat/qy/model"
 )
 
 //Department 部门
@@ -122,8 +121,8 @@ func GetDepartmentlist(c *client.Client) ([]Department, error) {
 }
 
 //CreateUser 创建用户
-func CreateUser(c *client.Client, user model.User) error {
-	return c.CreateUserFull(user.Userid, user.Name, user.Department, user.Position, user.Mobile, user.Email, user.Weixinid, user.Extattr.Attrs)
+func CreateUser(c *client.Client, user User) error {
+	return CreateUserFull(c, user.UserID, user.Name, user.Department, user.Position, user.Mobile, user.Email, user.WeixinID, user.Extattr.Attrs)
 }
 
 //CreateUserFull 创建用户，全信息
