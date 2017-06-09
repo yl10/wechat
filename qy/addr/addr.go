@@ -2,9 +2,19 @@ package addr
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/yl10/wechat/qy/client"
+)
+
+const (
+	USER_ALL      = 0
+	USER_FOLLOWED = 1 << iota
+	USER_FORBIDDEN
+	USER_UNFOLLOWED
 )
 
 //Department 部门
@@ -19,14 +29,15 @@ type Department struct {
 //User 用户
 type User struct {
 	UserID        string `json:"userid"`
-	Name          string
-	Department    []int
-	Position      string
+	Name          string `json:"name"`
+	Department    []int  `json:"department"`
+	Position      string `json:"position"`
 	Mobile        string
 	Email         string
 	Gender        string
 	WeixinID      string `json:"weixinid"`
 	Enable        bool
+	Avatar        string `json:"avatar"`
 	AvatarMediaID string `json:"avatar_mediaid"`
 	Status        int
 
@@ -107,17 +118,24 @@ func DeleteDepartment(c *client.Client, id int) error {
 func GetDepartmentlist(c *client.Client) ([]Department, error) {
 	data, err := c.SendGetRequest("https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=%s")
 	var ds struct {
+		ErrCode    string `json:"errcode"`
+		ErrMsg     string `json:"errmsg"`
 		Department []Department
 	}
 	if err != nil {
 		return nil, err
 	}
+
+	if ds.ErrCode != "0" {
+		return nil, errors.New(ds.ErrMsg)
+	}
+
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
 		return nil, err
 	}
-	return ds.Department, nil
 
+	return ds.Department, nil
 }
 
 //CreateUser 创建用户
@@ -183,5 +201,43 @@ func GetUserinfo(c *client.Client, userid string) (User, error) {
 }
 
 //获取部门用户
+func GetUserOfDept(c *client.Client, deptIds ...string) ([]User, error) {
+	status := strconv.Itoa(USER_FOLLOWED)
+	userList := make([]User, 0)
+
+	for _, dept := range deptIds {
+
+		var wxUser struct {
+			ErrCode  string `json:"errcode"`
+			ErrMsg   string `json:"errmsg"`
+			Userlist []User
+		}
+
+		queries := []string{
+			"access_token=%s",
+			"department_id=" + dept,
+			"fetch_child=1",
+			"status=" + status,
+		}
+
+		data, err := c.SendGetRequest("https://qyapi.weixin.qq.com/cgi-bin/user/list?" + strings.Join(queries, "&"))
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(data, &wxUser)
+		if err != nil {
+			return nil, err
+		}
+
+		if wxUser.ErrCode != "0" {
+			return nil, errors.New(wxUser.ErrMsg)
+		}
+
+		userList = append(userList, wxUser.Userlist...)
+	}
+
+	return userList, nil
+}
 
 //更新用户信息，还没写

@@ -29,3 +29,8 @@ func (wx *Wx) GetOauthUserInfo(code string) (*oauth.User, error) {
 func (wx *Wx) GetOAuthURI(redirectURI string, state ...string) string {
 	return oauth.GetOAuthURI(wx.client.CorpID(), redirectURI, state...)
 }
+
+// 获取 Client
+func (wx *Wx) GetClient() *client.Client {
+	return wx.client
+}
