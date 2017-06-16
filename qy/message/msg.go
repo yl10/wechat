@@ -25,6 +25,8 @@ const (
 	MsgTypeVideo = "video"
 	//MsgTypeFile 文件
 	MsgTypeFile = "file"
+	//MsgTypeTextCard 文本卡片
+	MsgTypeTextCard = "textcard"
 	//MsgTypeNews news消息
 	MsgTypeNews = "news"
 	//MsgTypeMPNews mpnews消息 mpnews消息与news消息类似，不同的是图文消息内容存储在微信后台，并且支持保密选项。每个应用每天最多可以发送100次。
@@ -87,6 +89,14 @@ type Video struct {
 type File struct {
 	MediaID string `json:"media_id"` // 媒体文件id, 可以调用上传媒体文件接口获取
 
+}
+
+//TextCard 文本卡片
+type TextCard struct {
+	Title       string `json:"title"`       //标题，不超过128个字节，超过会自动截断
+	Description string `json:"description"` //描述，不超过512个字节，超过会自动截断
+	URL         string `json:"url"`
+	Btntxt      string `json:"btntxt"` //按钮文字。 默认为“详情”， 不超过4个文字，超过自动截断。
 }
 
 //Result 发送消息的返回结果
@@ -161,6 +171,7 @@ func (m Message) MarshalJSON() ([]byte, error) {
 	switch msg := m.Content.(type) {
 	case Text:
 		result[MsgTypeText] = m.Content
+
 	case File:
 		result[MsgTypeFile] = m.Content
 	case Image:
@@ -188,6 +199,10 @@ func (m Message) MarshalJSON() ([]byte, error) {
 			return nil, fmt.Errorf("图文消息的文章个数不能超过 %d, 现在为 %d", NewsArticleCountLimit, n)
 		}
 		result[MsgTypeMPNews] = m.Content
+
+	case TextCard:
+
+		result[MsgTypeTextCard] = m.Content
 	default:
 		return nil, ErrUnexpectedMesseage(m)
 	}
@@ -203,13 +218,14 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 
 	var msg struct {
 		Header
-		Text   Text
-		File   File
-		Image  Image
-		News   News
-		MPNews MPNews
-		Voice  Voice
-		Video  Video
+		Text     Text
+		File     File
+		Image    Image
+		News     News
+		MPNews   MPNews
+		Voice    Voice
+		Video    Video
+		TextCard TextCard
 	}
 
 	err := json.Unmarshal(d, &msg)
@@ -222,6 +238,8 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 	switch m.MsgType {
 	case MsgTypeText:
 		m.Content = msg.Text
+	case MsgTypeTextCard:
+		m.Content = msg.TextCard
 	case MsgTypeFile:
 		m.Content = msg.File
 	case MsgTypeImage:
@@ -271,6 +289,12 @@ func NewText(agenid int64, toAll, issafe bool, user, party, tag []string, textco
 	return msg
 }
 
+//NewTextCard 实例化一个文本卡片消息
+func NewTextCard(agenid int64, toAll, issafe bool, user, party, tag []string, title, description, url, btntxt string) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, TextCard{Title: title, Description: description, URL: url, Btntxt: btntxt})
+	return msg
+}
+
 //NewMessage 实例化一个微信消息
 func NewMessage(agenid int64, toAll, issafe bool, user, party, tag []string, msg Contenter) (*Message, error) {
 
@@ -293,6 +317,8 @@ func NewMessage(agenid int64, toAll, issafe bool, user, party, tag []string, msg
 		switch msg.(type) {
 		case Text:
 			return MsgTypeText
+		case TextCard:
+			return MsgTypeTextCard
 		case File:
 			return MsgTypeFile
 		case Image:
