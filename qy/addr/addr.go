@@ -23,7 +23,7 @@ type Department struct {
 	Name     string
 	ParentID int `json:"parentid"`
 	Order    int
-	Child    []Department
+	//Child    []Department
 }
 
 //User 用户
@@ -115,24 +115,32 @@ func DeleteDepartment(c *client.Client, id int) error {
 }
 
 //GetDepartmentlist 获取部门列表
-func GetDepartmentlist(c *client.Client) ([]Department, error) {
-	data, err := c.SendGetRequest("https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=%s")
+func GetDepartmentlist(c *client.Client, id ...int) ([]Department, error) {
+	requrl := ""
+	if len(id) == 0 {
+		requrl = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=%s"
+	} else {
+
+		requrl = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=%s&id=" + fmt.Sprint(id[0])
+	}
+
+	data, err := c.SendGetRequest(requrl)
+
 	var ds struct {
-		ErrCode    string `json:"errcode"`
-		ErrMsg     string `json:"errmsg"`
-		Department []Department
+		ErrCode    int          `json:"errcode"`
+		ErrMsg     string       `json:"errmsg"`
+		Department []Department `json:"department"`
 	}
 	if err != nil {
 		return nil, err
-	}
-
-	if ds.ErrCode != "0" {
-		return nil, errors.New(ds.ErrMsg)
 	}
 
 	err = json.Unmarshal(data, &ds)
 	if err != nil {
 		return nil, err
+	}
+	if ds.ErrCode != 0 {
+		return nil, errors.New(ds.ErrMsg)
 	}
 
 	return ds.Department, nil
@@ -200,7 +208,7 @@ func GetUserinfo(c *client.Client, userid string) (User, error) {
 	return user, err
 }
 
-//获取部门用户
+//GetUserOfDept 获取部门用户
 func GetUserOfDept(c *client.Client, deptIds ...string) ([]User, error) {
 	status := strconv.Itoa(USER_FOLLOWED)
 	userList := make([]User, 0)
