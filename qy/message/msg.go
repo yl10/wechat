@@ -91,6 +91,14 @@ type File struct {
 
 }
 
+//TextCard 文本卡片
+type TextCard struct {
+	Title       string `json:"title"`       //标题，不超过128个字节，超过会自动截断
+	Description string `json:"description"` //描述，不超过512个字节，超过会自动截断
+	URL         string `json:"url"`
+	Btntxt      string `json:"btntxt"` //按钮文字。 默认为“详情”， 不超过4个文字，超过自动截断。
+}
+
 //Result 发送消息的返回结果
 type Result struct {
 	ErrCode     int    `json:"errcode"`
@@ -98,13 +106,6 @@ type Result struct {
 	InvaliUser  string `json:"invaliduser"`
 	InvaliParty string `json:"invalidparty"`
 	InvalidTag  string `json:"invalidtag"`
-}
-
-//NewsTextCard 文本卡片
-type TextCard struct {
-	Title       string `json:"title,omitempty"`       // 图文消息标题
-	Description string `json:"description,omitempty"` // 图文消息描述
-	URL         string `json:"url,omitempty"`         // 点击后跳转的链接.支持JPG,
 }
 
 //NewsArticle 图文消息
@@ -285,9 +286,14 @@ func NewText(agenid int64, toAll, issafe bool, user, party, tag []string, textco
 	return msg
 }
 
-//NewText 实例化一个文本消息
-func NewTextCard(agenid int64, toAll, issafe bool, user, party, tag []string, textCard Contenter) *Message {
-	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, textCard)
+//NewTextCard 实例化一个文本卡片消息
+func NewTextCard(agenid int64, toAll, issafe bool, user, party, tag []string, title, description, url string, btnText ...string) *Message {
+	var btntxt = "阅读全文"
+	if len(btnText) > 0 {
+		btntxt = btnText[0]
+	}
+
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, TextCard{Title: title, Description: description, URL: url, Btntxt: btntxt})
 	return msg
 }
 
