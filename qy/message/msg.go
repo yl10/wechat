@@ -17,6 +17,8 @@ const (
 const (
 	//MsgTypeText 文本
 	MsgTypeText = "text"
+	//MsgTypeText 文本卡片
+	MsgTypeTextCard = "textcard"
 	//MsgTypeImage 图片
 	MsgTypeImage = "image"
 	//MsgTypeVoice 语音
@@ -98,6 +100,13 @@ type Result struct {
 	InvalidTag  string `json:"invalidtag"`
 }
 
+//NewsTextCard 文本卡片
+type TextCard struct {
+	Title       string `json:"title,omitempty"`       // 图文消息标题
+	Description string `json:"description,omitempty"` // 图文消息描述
+	URL         string `json:"url,omitempty"`         // 点击后跳转的链接.支持JPG,
+}
+
 //NewsArticle 图文消息
 type NewsArticle struct {
 	Title       string `json:"title,omitempty"`       // 图文消息标题
@@ -161,6 +170,8 @@ func (m Message) MarshalJSON() ([]byte, error) {
 	switch msg := m.Content.(type) {
 	case Text:
 		result[MsgTypeText] = m.Content
+	case TextCard:
+		result[MsgTypeTextCard] = m.Content
 	case File:
 		result[MsgTypeFile] = m.Content
 	case Image:
@@ -203,13 +214,14 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 
 	var msg struct {
 		Header
-		Text   Text
-		File   File
-		Image  Image
-		News   News
-		MPNews MPNews
-		Voice  Voice
-		Video  Video
+		Text     Text
+		TextCard TextCard
+		File     File
+		Image    Image
+		News     News
+		MPNews   MPNews
+		Voice    Voice
+		Video    Video
 	}
 
 	err := json.Unmarshal(d, &msg)
@@ -222,6 +234,8 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 	switch m.MsgType {
 	case MsgTypeText:
 		m.Content = msg.Text
+	case MsgTypeTextCard:
+		m.Content = msg.TextCard
 	case MsgTypeFile:
 		m.Content = msg.File
 	case MsgTypeImage:
@@ -271,6 +285,12 @@ func NewText(agenid int64, toAll, issafe bool, user, party, tag []string, textco
 	return msg
 }
 
+//NewText 实例化一个文本消息
+func NewTextCard(agenid int64, toAll, issafe bool, user, party, tag []string, textCard Contenter) *Message {
+	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, textCard)
+	return msg
+}
+
 //NewMessage 实例化一个微信消息
 func NewMessage(agenid int64, toAll, issafe bool, user, party, tag []string, msg Contenter) (*Message, error) {
 
@@ -293,6 +313,8 @@ func NewMessage(agenid int64, toAll, issafe bool, user, party, tag []string, msg
 		switch msg.(type) {
 		case Text:
 			return MsgTypeText
+		case TextCard:
+			return MsgTypeTextCard
 		case File:
 			return MsgTypeFile
 		case Image:
