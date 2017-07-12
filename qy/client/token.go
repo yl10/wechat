@@ -61,7 +61,7 @@ func (dats DefaultAccessTokenServer) Token() (string, error) {
 		token = <-dats.tokenChan
 	}
 	if token.AccessToken == "" {
-		return "", fmt.Errorf("没能获取到token：%s", dats.err)
+		return "", fmt.Errorf("没能获取到token：%v", dats.err)
 	}
 	return token.AccessToken, nil
 }

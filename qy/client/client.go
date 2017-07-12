@@ -37,6 +37,10 @@ type reply struct {
 //如果没有指定token服务器，就自己启动一个，请确保不要重复启动token服务器
 //如果htc=nil，则默认使用http.DefaultClient，如果要实现代理等，可自行传入client
 func NewClient(corpid, secret string, srv AccesstokenServer, htc *http.Client) (*Client, error) {
+	if corpid == "" || secret == "" {
+		return nil, errors.New("企业号ID或者密钥为空")
+	}
+
 	var c = &Client{corpID: corpid, secret: secret}
 	if htc == nil {
 		htc = http.DefaultClient
