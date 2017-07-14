@@ -215,7 +215,7 @@ func GetUserinfo(c *client.Client, userid string) (User, error) {
 func GetUserListByDept(c *client.Client, deptID string, details bool, fetchChild ...bool) ([]User, error) {
 
 	var wxUser struct {
-		ErrCode  string `json:"errcode"`
+		ErrCode  int    `json:"errcode"`
 		ErrMsg   string `json:"errmsg"`
 		Userlist []User
 	}
@@ -247,8 +247,7 @@ func GetUserListByDept(c *client.Client, deptID string, details bool, fetchChild
 	if err != nil {
 		return nil, err
 	}
-
-	if wxUser.ErrCode != "0" {
+	if wxUser.ErrCode != 0 {
 		return nil, errors.New(wxUser.ErrMsg)
 	}
 
