@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
+
 	"strings"
 
 	"github.com/yl10/wechat/qy/client"
@@ -208,44 +208,93 @@ func GetUserinfo(c *client.Client, userid string) (User, error) {
 	return user, err
 }
 
-//GetUserOfDept 获取部门用户
-func GetUserOfDept(c *client.Client, deptIds ...string) ([]User, error) {
-	status := strconv.Itoa(USER_FOLLOWED)
-	userList := make([]User, 0)
+//GetUserListByDept 获取部门成员
+//deptID 部门ID
+//details 是否获取详情，非详情只有userid和name
+//fetch_child 是否递归，不传就是false
+func GetUserListByDept(c *client.Client, deptID string, details bool, fetchChild ...bool) ([]User, error) {
 
-	for _, dept := range deptIds {
-
-		var wxUser struct {
-			ErrCode  string `json:"errcode"`
-			ErrMsg   string `json:"errmsg"`
-			Userlist []User
+	var wxUser struct {
+		ErrCode  string `json:"errcode"`
+		ErrMsg   string `json:"errmsg"`
+		Userlist []User
+	}
+	var mustchild int
+	if len(fetchChild) > 0 {
+		if fetchChild[0] {
+			mustchild = 1
 		}
-
-		queries := []string{
-			"access_token=%s",
-			"department_id=" + dept,
-			"fetch_child=1",
-			"status=" + status,
-		}
-
-		data, err := c.SendGetRequest("https://qyapi.weixin.qq.com/cgi-bin/user/list?" + strings.Join(queries, "&"))
-		if err != nil {
-			return nil, err
-		}
-
-		err = json.Unmarshal(data, &wxUser)
-		if err != nil {
-			return nil, err
-		}
-
-		if wxUser.ErrCode != "0" {
-			return nil, errors.New(wxUser.ErrMsg)
-		}
-
-		userList = append(userList, wxUser.Userlist...)
 	}
 
-	return userList, nil
+	queries := []string{
+		"access_token=%s",
+		"department_id=" + deptID,
+		"fetch_child=" + fmt.Sprintf("%d", mustchild)}
+	strURL := ""
+
+	if details {
+		strURL = "https://qyapi.weixin.qq.com/cgi-bin/user/list?" + strings.Join(queries, "&")
+	} else {
+		strURL = "https://qyapi.weixin.qq.com/cgi-bin/user/simplelist?" + strings.Join(queries, "&")
+	}
+
+	data, err := c.SendGetRequest(strURL)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &wxUser)
+	if err != nil {
+		return nil, err
+	}
+
+	if wxUser.ErrCode != "0" {
+		return nil, errors.New(wxUser.ErrMsg)
+	}
+
+	return wxUser.Userlist, nil
+
 }
+
+// 旧版本的接口
+// //GetUserOfDept 获取部门成员列表
+// func GetUserOfDept(c *client.Client, deptIds ...string) ([]User, error) {
+// 	status := strconv.Itoa(USER_FOLLOWED)
+// 	userList := make([]User, 0)
+
+// 	for _, dept := range deptIds {
+
+// 		var wxUser struct {
+// 			ErrCode  string `json:"errcode"`
+// 			ErrMsg   string `json:"errmsg"`
+// 			Userlist []User
+// 		}
+
+// 		queries := []string{
+// 			"access_token=%s",
+// 			"department_id=" + dept,
+// 			"fetch_child=1",
+// 			"status=" + status,
+// 		}
+
+// 		data, err := c.SendGetRequest("https://qyapi.weixin.qq.com/cgi-bin/user/list?" + strings.Join(queries, "&"))
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		err = json.Unmarshal(data, &wxUser)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		if wxUser.ErrCode != "0" {
+// 			return nil, errors.New(wxUser.ErrMsg)
+// 		}
+
+// 		userList = append(userList, wxUser.Userlist...)
+// 	}
+
+// 	return userList, nil
+// }
 
 //更新用户信息，还没写

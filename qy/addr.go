@@ -49,8 +49,10 @@ func (wx *Wx) BatchDeleteUser(useridlist []string) error {
 	return addr.BatchDeleteUser(wx.client, useridlist)
 }
 
-//GetUserOfDept 获取部门用户
-func (wx *Wx) GetUserOfDept(deptIds ...string) ([]addr.User, error) {
-
-	return addr.GetUserOfDept(wx.client, deptIds...)
+//GetUserListByDept 获取部门成员
+//deptID 部门ID
+//details 是否获取详情，非详情只有userid和name
+//fetch_child 是否递归，不传就是false
+func (wx *Wx) GetUserListByDept(deptID string, details bool, fetchChild ...bool) ([]addr.User, error) {
+	return addr.GetUserListByDept(wx.client, deptID, details, fetchChild...)
 }
