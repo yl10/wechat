@@ -36,7 +36,7 @@ type User struct {
 	Email         string
 	Gender        string
 	WeixinID      string `json:"weixinid"`
-	Enable        bool
+	Enable        int
 	Avatar        string `json:"avatar"`
 	AvatarMediaID string `json:"avatar_mediaid"`
 	Status        int

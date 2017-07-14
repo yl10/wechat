@@ -17,6 +17,8 @@ const (
 const (
 	//MsgTypeText 文本
 	MsgTypeText = "text"
+	//MsgTypeText 文本卡片
+	MsgTypeTextCard = "textcard"
 	//MsgTypeImage 图片
 	MsgTypeImage = "image"
 	//MsgTypeVoice 语音
@@ -25,8 +27,6 @@ const (
 	MsgTypeVideo = "video"
 	//MsgTypeFile 文件
 	MsgTypeFile = "file"
-	//MsgTypeTextCard 文本卡片
-	MsgTypeTextCard = "textcard"
 	//MsgTypeNews news消息
 	MsgTypeNews = "news"
 	//MsgTypeMPNews mpnews消息 mpnews消息与news消息类似，不同的是图文消息内容存储在微信后台，并且支持保密选项。每个应用每天最多可以发送100次。
@@ -171,7 +171,8 @@ func (m Message) MarshalJSON() ([]byte, error) {
 	switch msg := m.Content.(type) {
 	case Text:
 		result[MsgTypeText] = m.Content
-
+	case TextCard:
+		result[MsgTypeTextCard] = m.Content
 	case File:
 		result[MsgTypeFile] = m.Content
 	case Image:
@@ -199,10 +200,6 @@ func (m Message) MarshalJSON() ([]byte, error) {
 			return nil, fmt.Errorf("图文消息的文章个数不能超过 %d, 现在为 %d", NewsArticleCountLimit, n)
 		}
 		result[MsgTypeMPNews] = m.Content
-
-	case TextCard:
-
-		result[MsgTypeTextCard] = m.Content
 	default:
 		return nil, ErrUnexpectedMesseage(m)
 	}
@@ -219,13 +216,13 @@ func (m *Message) UnmarshalJSON(data []byte) error {
 	var msg struct {
 		Header
 		Text     Text
+		TextCard TextCard
 		File     File
 		Image    Image
 		News     News
 		MPNews   MPNews
 		Voice    Voice
 		Video    Video
-		TextCard TextCard
 	}
 
 	err := json.Unmarshal(d, &msg)
@@ -290,7 +287,12 @@ func NewText(agenid int64, toAll, issafe bool, user, party, tag []string, textco
 }
 
 //NewTextCard 实例化一个文本卡片消息
-func NewTextCard(agenid int64, toAll, issafe bool, user, party, tag []string, title, description, url, btntxt string) *Message {
+func NewTextCard(agenid int64, toAll, issafe bool, user, party, tag []string, title, description, url string, btnText ...string) *Message {
+	var btntxt = "阅读全文"
+	if len(btnText) > 0 {
+		btntxt = btnText[0]
+	}
+
 	msg, _ := NewMessage(agenid, toAll, issafe, user, party, tag, TextCard{Title: title, Description: description, URL: url, Btntxt: btntxt})
 	return msg
 }
