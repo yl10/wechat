@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
@@ -20,6 +21,11 @@ type Client struct {
 	secret      string
 	httpClient  *http.Client //
 	tokenServer AccesstokenServer
+	JsTicket    JsApiTicket
+}
+type JsApiTicket struct {
+	JsTicket string    `json:"ticket"`
+	Expires  time.Time //失效时间
 }
 
 //ResponseError 微信返回的错误信息
@@ -37,6 +43,10 @@ type reply struct {
 //如果没有指定token服务器，就自己启动一个，请确保不要重复启动token服务器
 //如果htc=nil，则默认使用http.DefaultClient，如果要实现代理等，可自行传入client
 func NewClient(corpid, secret string, srv AccesstokenServer, htc *http.Client) (*Client, error) {
+	if corpid == "" || secret == "" {
+		return nil, errors.New("企业号ID或者密钥为空")
+	}
+
 	var c = &Client{corpID: corpid, secret: secret}
 	if htc == nil {
 		htc = http.DefaultClient
@@ -158,4 +168,55 @@ func (c *Client) PostJSON(reqURL string, v interface{}) ([]byte, error) {
 	}
 
 	return nil, errors.New("WeiXin post request too many times:" + reqURL)
+}
+
+//GetJsTicket 获取JsTicket
+//reqURL当前网页的URL，不包含#及其后面部分，例如
+//http://mp.weixin.qq.com
+func (c *Client) GetJsTicket() (string, error) {
+	k := time.Now()
+	var jsticket string
+	if k.Before(c.JsTicket.Expires) && c.JsTicket.JsTicket != "" {
+		jsticket = c.JsTicket.JsTicket
+	} else {
+		var errResult error
+		var res struct {
+			Errcode   string `json:"errcode"`
+			Errmsg    int64  `json:"errmsg"`
+			Ticket    string `json:"ticket"`
+			ExpiresIn int64  `json:"expires_in"`
+		}
+		token, tokerr := c.AccessToken()
+		if tokerr != nil {
+			return "", tokerr
+		}
+
+		resp, err := http.Get(fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token=%s", token))
+		if err != nil {
+			errResult = fmt.Errorf("Get js ticket failed: %v", err)
+			return "", errResult
+		}
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			errResult = fmt.Errorf("Read js ticket failed: %v", err)
+			return "", errResult
+		}
+		if err = json.Unmarshal(body, &res); err != nil {
+			var clienterr ResponseError
+			err = json.Unmarshal(body, &clienterr)
+			if err == nil {
+				errResult = fmt.Errorf("获取JsTicket失败：%v\n", clienterr)
+				return "", errResult
+			}
+			errResult = fmt.Errorf("Parse js ticket failed:%v ", err)
+			return "", errResult
+		}
+		c.JsTicket.JsTicket = res.Ticket
+		c.JsTicket.Expires = time.Now().Add(time.Duration(res.ExpiresIn) * time.Second)
+		jsticket = res.Ticket
+	}
+
+	return jsticket, nil
 }
