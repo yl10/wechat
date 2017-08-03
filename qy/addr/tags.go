@@ -30,7 +30,7 @@ func CreateTag(c *client.Client, name string, id ...int) (int, error) {
 	if len(name) >= 32 {
 		return 0, fmt.Errorf("更新标签失败：%s", "标签的长度不能超过32")
 	}
-	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/create?"
+	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/create?access_token=%s"
 	tag := Tag{Name: name}
 	if len(id) > 0 {
 		tag.ID = id[0]
@@ -49,7 +49,7 @@ func CreateTag(c *client.Client, name string, id ...int) (int, error) {
 
 //UpdateTag 更新tag
 func UpdateTag(c *client.Client, name string, id int) error {
-	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/update?"
+	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/update?access_token=%s"
 	tag := Tag{Name: name, ID: id}
 
 	if len(name) >= 32 {
@@ -62,7 +62,7 @@ func UpdateTag(c *client.Client, name string, id int) error {
 
 //DeleteTag 删除标签
 func DeleteTag(c *client.Client, tagid int) error {
-	uri := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/tag/delete?tagid=%d", tagid)
+	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/delete?access_token=%s&" + fmt.Sprintf("tagid=%d", tagid)
 
 	_, err := c.SendGetRequest(uri)
 	return err
@@ -72,7 +72,7 @@ func DeleteTag(c *client.Client, tagid int) error {
 userlist:map[userid]username
 */
 func GetUsersByTag(c *client.Client, tagid int) (userlist map[string]string, partylist []int, err error) {
-	uri := fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/tag/get?tagid=%d", tagid)
+	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/get?access_token=%s&" + fmt.Sprintf("tagid=%d", tagid)
 	resdata, err := c.SendGetRequest(uri)
 
 	var result struct {
@@ -116,9 +116,9 @@ func patchuserbytag(c *client.Client, action Action, tagid int, userlist []strin
 	uri := ""
 	switch action {
 	case ADD:
-		uri = "https://qyapi.weixin.qq.com/cgi-bin/tag/addtagusers?"
+		uri = "https://qyapi.weixin.qq.com/cgi-bin/tag/addtagusers?access_token=%s"
 	case DELETE:
-		uri = "https://qyapi.weixin.qq.com/cgi-bin/tag/deltagusers?"
+		uri = "https://qyapi.weixin.qq.com/cgi-bin/tag/deltagusers?access_token=%s"
 	default:
 		return nil, nil, fmt.Errorf("标签操作失败：未定义的动作类型，请使用ADD|DELETE")
 	}
@@ -143,7 +143,7 @@ func patchuserbytag(c *client.Client, action Action, tagid int, userlist []strin
 
 //GetTagList 获取标签列表
 func GetTagList(c *client.Client) (map[int]string, error) {
-	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/list?"
+	uri := "https://qyapi.weixin.qq.com/cgi-bin/tag/list?access_token=%s"
 
 	var result struct {
 		Taglist []Tag
