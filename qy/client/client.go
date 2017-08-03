@@ -181,8 +181,8 @@ func (c *Client) GetJsTicket() (string, error) {
 	} else {
 		var errResult error
 		var res struct {
-			Errcode   string `json:"errcode"`
-			Errmsg    int64  `json:"errmsg"`
+			Errcode   int64  `json:"errcode"`
+			Errmsg    string `json:"errmsg"`
 			Ticket    string `json:"ticket"`
 			ExpiresIn int64  `json:"expires_in"`
 		}
@@ -203,16 +203,18 @@ func (c *Client) GetJsTicket() (string, error) {
 			errResult = fmt.Errorf("Read js ticket failed: %v", err)
 			return "", errResult
 		}
-		if err = json.Unmarshal(body, &res); err != nil {
-			var clienterr ResponseError
-			err = json.Unmarshal(body, &clienterr)
-			if err == nil {
-				errResult = fmt.Errorf("获取JsTicket失败：%v\n", clienterr)
-				return "", errResult
-			}
-			errResult = fmt.Errorf("Parse js ticket failed:%v ", err)
+		err = json.Unmarshal(body, &res)
+		if err != nil {
+			errResult = fmt.Errorf("获取JsTicket失败：%v\n", err)
 			return "", errResult
 		}
+		var clienterr ResponseError
+		err = json.Unmarshal(body, &clienterr)
+		if err != nil {
+			errResult = fmt.Errorf("获取JsTicket失败：%v\n", clienterr)
+			return "", errResult
+		}
+
 		c.JsTicket.JsTicket = res.Ticket
 		c.JsTicket.Expires = time.Now().Add(time.Duration(res.ExpiresIn) * time.Second)
 		jsticket = res.Ticket

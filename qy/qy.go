@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/yl10/wechat/qy/client"
@@ -22,8 +23,8 @@ type Wx struct {
 type JsApiTicket struct {
 	CorpId    string
 	NonceStr  string
-	TimeStamp int64
-	Signature []byte
+	TimeStamp string
+	Signature string
 }
 
 //NewWx 初始化一个微信
@@ -61,15 +62,16 @@ func (wx *Wx) GetJsAPITicket(url string) (*JsApiTicket, error) {
 //Signature 生成Signature
 func (wx *Wx) Signature(str, url string) *JsApiTicket {
 	cur := time.Now()
-	timestamp := cur.UnixNano() / 1000000
+	timestamp := strconv.FormatInt(cur.UnixNano()/1000000000, 10)
 	string1 := fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%s&url=%s", str, noncestr, timestamp, url)
 	h := sha1.New()
 	h.Write([]byte(string1))
 	bs := h.Sum(nil)
+	siginature := fmt.Sprintf("%x", bs)
 	var ret = new(JsApiTicket)
 	ret.CorpId = wx.client.CorpID()
 	ret.NonceStr = noncestr
 	ret.TimeStamp = timestamp
-	ret.Signature = bs
+	ret.Signature = siginature
 	return ret
 }
