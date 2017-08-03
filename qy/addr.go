@@ -90,3 +90,4 @@ func (wx *Wx) AddUserToTag(tagid int, userlist []string, partylist []int) (inval
 func (wx *Wx) DeleteUserFromTag(tagid int, userlist []string, partylist []int) (invalidlist []string, invalidparty []int, err error) {
 	return addr.DeleteUserFromTag(wx.client, tagid, userlist, partylist)
 }
+

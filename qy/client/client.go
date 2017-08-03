@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
@@ -20,6 +21,11 @@ type Client struct {
 	secret      string
 	httpClient  *http.Client //
 	tokenServer AccesstokenServer
+	JsTicket    JsApiTicket
+}
+type JsApiTicket struct {
+	JsTicket string    `json:"ticket"`
+	Expires  time.Time //失效时间
 }
 
 //ResponseError 微信返回的错误信息
@@ -162,4 +168,57 @@ func (c *Client) PostJSON(reqURL string, v interface{}) ([]byte, error) {
 	}
 
 	return nil, errors.New("WeiXin post request too many times:" + reqURL)
+}
+
+//GetJsTicket 获取JsTicket
+//reqURL当前网页的URL，不包含#及其后面部分，例如
+//http://mp.weixin.qq.com
+func (c *Client) GetJsTicket() (string, error) {
+	k := time.Now()
+	var jsticket string
+	if k.Before(c.JsTicket.Expires) && c.JsTicket.JsTicket != "" {
+		jsticket = c.JsTicket.JsTicket
+	} else {
+		var errResult error
+		var res struct {
+			Errcode   int64  `json:"errcode"`
+			Errmsg    string `json:"errmsg"`
+			Ticket    string `json:"ticket"`
+			ExpiresIn int64  `json:"expires_in"`
+		}
+		token, tokerr := c.AccessToken()
+		if tokerr != nil {
+			return "", tokerr
+		}
+
+		resp, err := http.Get(fmt.Sprintf("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token=%s", token))
+		if err != nil {
+			errResult = fmt.Errorf("Get js ticket failed: %v", err)
+			return "", errResult
+		}
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			errResult = fmt.Errorf("Read js ticket failed: %v", err)
+			return "", errResult
+		}
+		err = json.Unmarshal(body, &res)
+		if err != nil {
+			errResult = fmt.Errorf("获取JsTicket失败：%v\n", err)
+			return "", errResult
+		}
+		var clienterr ResponseError
+		err = json.Unmarshal(body, &clienterr)
+		if err != nil {
+			errResult = fmt.Errorf("获取JsTicket失败：%v\n", clienterr)
+			return "", errResult
+		}
+
+		c.JsTicket.JsTicket = res.Ticket
+		c.JsTicket.Expires = time.Now().Add(time.Duration(res.ExpiresIn) * time.Second)
+		jsticket = res.Ticket
+	}
+
+	return jsticket, nil
 }
