@@ -163,3 +163,8 @@ func (c *Client) PostJSON(reqURL string, v interface{}) ([]byte, error) {
 
 	return nil, errors.New("WeiXin post request too many times:" + reqURL)
 }
+
+//DefaultTestClient 测试用的
+func DefaultTestClient() (*Client, error) {
+	return NewClient("wx59ab475b9a833d82", "xTJKfm8hcUYbHlSzCBdR8NgtLISTmksNDvOVaDiOUis", nil, nil)
+}

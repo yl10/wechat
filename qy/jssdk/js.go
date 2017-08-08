@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/yl10/wechat/qy/client"
 	"github.com/yl10/wechat/util"
 )
@@ -116,7 +115,14 @@ func (j JsTicketServer) getTicket() (ticket string, tlong time.Duration, errResu
 
 }
 
-func jssha1(noncestr, jsapiTicket string, timestamp int64, url string) string {
+/*Jssha1 js签名方法
+签名生成规则如下：
+
+参与签名的字段包括有效的 jsapi_ticket（获取方式详见企业微信 JSSDK 文档）， noncestr （随机字符串，由开发者随机生成），timestamp （由开发者生成的当前时间戳）， url（当前网页的URL，不包含#及其后面部分。注意：对于没有只有域名没有 path 的 URL ，浏览器会自动加上 / 作为 path，如打开 http://qq.com 则获取到的 URL 为 http://qq.com/）。
+对所有待签名参数按照字段名的 ASCII 码从小到大排序（字典序）后，使用 URL 键值对的格式（即key1=value1&key2=value2…）拼接成字符串 string1。这里需要注意的是所有参数名均为小写字符。
+接下来对 string1 作 sha1 加密，字段名和字段值都采用原始值，不进行 URL 转义。即 signature=sha1(string1)。
+*/
+func Jssha1(noncestr, jsapiTicket string, timestamp int64, url string) string {
 	sting1 := "jsapi_ticket=" + jsapiTicket + "&noncestr=" + noncestr + "&timestamp=" + strconv.FormatInt(timestamp, 10) + "&url=" + url
 	h := sha1.New()
 	h.Write([]byte(sting1))
@@ -140,7 +146,6 @@ func (j JsTicketServer) GetJsWxconfig(urlstring string) (JsWxConfig, error) {
 	cfg.AppID = j.client.CorpID()
 	cfg.NonceStr = util.RandomAlphanumeric(10)
 	cfg.TimeStamp = time.Now().Unix()
-	beego.Error(cfg, ticket)
-	cfg.Signature = jssha1(cfg.NonceStr, ticket, cfg.TimeStamp, u.String())
+	cfg.Signature = Jssha1(cfg.NonceStr, ticket, cfg.TimeStamp, u.String())
 	return cfg, nil
 }
