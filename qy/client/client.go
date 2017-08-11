@@ -222,3 +222,7 @@ func (c *Client) GetJsTicket() (string, error) {
 
 	return jsticket, nil
 }
+
+func DefaultTestClient() (*Client, error) {
+	return NewClient("wx59ab475b9a833d82", "xTJKfm8hcUYbHlSzCBdR8NgtLISTmksNDvOVaDiOUis", nil, nil)
+}
