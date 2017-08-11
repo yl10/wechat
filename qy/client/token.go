@@ -127,7 +127,7 @@ func AuthAccessToken(appid string, secret string) (token string, tlong time.Dura
 		var clienterr ResponseError
 		err = json.Unmarshal(body, &clienterr)
 		if err == nil {
-			errResult = fmt.Errorf("获取Accesstoken失败：%v\r\n ", clienterr)
+			errResult = fmt.Errorf("获取Accesstoken失败：%v\n", clienterr)
 			return
 		}
 		errResult = fmt.Errorf("Parse access token failed:%v ", err)
