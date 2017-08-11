@@ -56,3 +56,38 @@ func (wx *Wx) BatchDeleteUser(useridlist []string) error {
 func (wx *Wx) GetUserListByDept(deptID string, details bool, fetchChild ...bool) ([]addr.User, error) {
 	return addr.GetUserListByDept(wx.client, deptID, details, fetchChild...)
 }
+
+//CreateTag 创建标签
+//name 标签名称
+//id 标签id
+func (wx *Wx) CreateTag(name string, id ...int) (int, error) {
+	return addr.CreateTag(wx.client, name, id...)
+}
+
+//UpdateTag 更新tag
+func (wx *Wx) UpdateTag(name string, id int) error {
+	return addr.UpdateTag(wx.client, name, id)
+}
+
+//DeleteTag 删除标签
+func (wx *Wx) DeleteTag(tagid int) error {
+	return addr.DeleteTag(wx.client, tagid)
+}
+
+/*GetUsersByTag 获取标签下成员
+userlist:map[userid]username
+*/
+func (wx *Wx) GetUsersByTag(tagid int) (userlist map[string]string, partylist []int, err error) {
+	return addr.GetUsersByTag(wx.client, tagid)
+}
+
+//AddUserToTag 给标签添加成员
+func (wx *Wx) AddUserToTag(tagid int, userlist []string, partylist []int) (invalidlist []string, invalidparty []int, err error) {
+	return addr.AddUserToTag(wx.client, tagid, userlist, partylist)
+}
+
+//DeleteUserFromTag 从标签中移除成员
+func (wx *Wx) DeleteUserFromTag(tagid int, userlist []string, partylist []int) (invalidlist []string, invalidparty []int, err error) {
+	return addr.DeleteUserFromTag(wx.client, tagid, userlist, partylist)
+}
+
