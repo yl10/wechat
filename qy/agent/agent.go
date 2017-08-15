@@ -77,9 +77,7 @@ func (a *Agent) UnmarshalJSON(data []byte) (err error) {
 		partymap := agent["allow_partys"].(map[string]interface{})["partyid"].([]interface{})
 		a.Partys = make([]int, 0)
 		for _, v := range partymap {
-			fmt.Printf("shzi:%T     %v", v, v)
 			pid := int(v.(float64))
-			fmt.Printf("pid: %d ", pid)
 			a.Partys = append(a.Partys, pid)
 
 		}
@@ -89,59 +87,12 @@ func (a *Agent) UnmarshalJSON(data []byte) (err error) {
 		tagmap := agent["allow_tags"].(map[string]interface{})["tagid"].([]interface{})
 		a.Tags = make([]int, 0)
 		for _, v := range tagmap {
-			fmt.Printf("shzi:%T     %v", v, v)
 			tid := int(v.(float64))
-
 			a.Tags = append(a.Tags, tid)
 
 		}
 	}
 
-	// 	type at struct {
-	// 		Agent
-	// 	}
-	// 	var anget Agent
-	// 	// var anget struct {
-	// 	// 	Agent
-	// 	// 	//AllowUserinfos map[string][]map[string]string `json:"allow_userinfos"`
-	// 	// 	// AllowUserinfos struct {
-	// 	// 	// 	User []struct {
-	// 	// 	// 		Userid string
-	// 	// 	// 	}
-	// 	// 	// }
-	// 	// 	// AllowPartys struct {
-	// 	// 	// 	Partyid []int
-	// 	// 	// } `json:"allow_partys"`
-	// 	// 	// AllowTags struct {
-	// 	// 	// 	Tagid []int
-	// 	// 	// } `json:"allow_tags"`
-	// 	// }
-
-	// 	if err := json.Unmarshal(data, &anget); err != nil {
-	// 		return err
-	// 	}
-
-	// 	a.ID = anget.ID
-	// 	a.Name = anget.Name
-	// 	a.SquareLogoURL = anget.SquareLogoURL
-	// 	a.Description = anget.Description
-	// 	a.Closed = anget.Closed
-	// 	a.RedirectDomain = anget.RedirectDomain
-	// 	a.ReportEnter = anget.ReportEnter
-	// 	a.ReportLocation = anget.ReportLocation
-	// 	a.HomeURL = anget.HomeURL
-
-	// 	// a.Users = make([]string, 0)
-	// 	// for _, v := range anget.AllowUserinfos.User {
-	// 	// 	a.Users = append(a.Users, v.Userid)
-	// 	// }
-
-	// 	// a.Partys = make([]int, 0)
-
-	// 	// a.Partys = append(a.Partys, anget.AllowPartys.Partyid...)
-
-	// 	// a.Tags = make([]int, 0)
-	// 	// a.Tags = append(a.Tags, anget.AllowTags.Tagid...)
 	return nil
 }
 
