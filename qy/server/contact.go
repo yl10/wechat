@@ -68,6 +68,7 @@ type UserAttr struct {
 type PartyRequestMsg struct {
 	RequestMsgHeader
 	ChangeType CDATA //
+	Party
 }
 
 func (o PartyRequestMsg) getheader() RequestMsgHeader {
